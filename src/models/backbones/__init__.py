@@ -8,7 +8,8 @@ from .mobilenet import (
 from .resnet import (
     ResNet18_BoT,
     ResNet18_BoTLinear,
-    ResNet18_CA
+    ResNet18_CA,
+    ResNet18_Hybrid
 )
 
 __all__ = [
@@ -21,5 +22,6 @@ __all__ = [
     # ResNet variants
     'ResNet18_BoT',
     'ResNet18_BoTLinear',
-    'ResNet18_CA'
+    'ResNet18_CA',
+    'ResNet18_Hybrid'
 ]
