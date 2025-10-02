@@ -1,0 +1,6 @@
+torch
+Pillow
+scikit-learn
+matplotlib
+seaborn
+timm
