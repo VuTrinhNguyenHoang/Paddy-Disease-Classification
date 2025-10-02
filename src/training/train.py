@@ -1,3 +1,4 @@
+import os
 import torch
 from tqdm.auto import tqdm
 from ..utils.metrics import evaluate, fps
@@ -35,6 +36,8 @@ def train_one_epoch(model, loader, criterion, optimizer, scaler, gpu_aug=None, M
     return running/total, correct/total
 
 def save_ckpt(model, path, meta):
+    if os.path.exists(path):
+        os.remove(path)
     torch.save({"model": model.state_dict(), "meta": meta}, path)
 
 def get_param_groups(model, base_lr=1e-4, head_lr=1e-3, weight_decay=1e-2):
