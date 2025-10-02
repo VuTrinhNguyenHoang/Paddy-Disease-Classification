@@ -103,7 +103,7 @@ def train_model(model_name, model, train_loader, valid_loader, criterion, optimi
         if patience != None:
             if valid_f1 > best_f1:
                 best_f1, best_epoch = valid_f1, epoch
-                save_ckpt(model, best_path, {"model_name": model_name})
+                save_ckpt(model, best_path, {"model_name": model_name, "epoch": epoch})
                 no_improve_epochs = 0
             else:
                 no_improve_epochs += 1
