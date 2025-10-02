@@ -13,7 +13,7 @@ __all__ = [
     'fps',
     'predict',
     'evaluate',
-    'confusion'
+    'confusion',
     
     # Plot functions
     'plot_history',
