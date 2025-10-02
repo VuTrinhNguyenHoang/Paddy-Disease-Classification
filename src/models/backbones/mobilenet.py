@@ -96,7 +96,7 @@ class MobileNetV3_Small_Hybrid(nn.Module):
         # Stack multiple attention blocks
         self.attention_stack = nn.Sequential(
             CABlock(self.out_channels, self.out_channels, reduction),
-            BoTNetBlock(self.out_channels, self.out_channels)
+            BoTNetBlock(self.out_channels, self.out_channels, heads)
         )
         
         self.pool = nn.AdaptiveAvgPool2d(1)
