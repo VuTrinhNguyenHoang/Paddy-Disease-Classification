@@ -1,6 +1,6 @@
 import torch, time
 import numpy as np
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support, confusion_matrix
 
 def accuracy_fscore(y_true, y_pred):
     acc = accuracy_score(y_true, y_pred)
@@ -8,6 +8,10 @@ def accuracy_fscore(y_true, y_pred):
         y_true, y_pred, average="macro", zero_division=0
     )
     return acc, f1
+
+def confusion(y_true, y_pred, normalize=None):
+    cm = confusion_matrix(y_true, y_pred, normalize=normalize)
+    return cm
 
 @torch.inference_mode()
 def fps(model, batch_size, image_size, steps=20, warmup=10):
