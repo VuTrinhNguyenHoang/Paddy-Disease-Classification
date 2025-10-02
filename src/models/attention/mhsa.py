@@ -29,7 +29,7 @@ class MultiHeadSelfAttention2D(nn.Module):
         r = self.pe(B, H, W)
 
         def split_heads(t):
-            return t.view(B.self.heads, self.dh, M)
+            return t.view(B, self.heads, self.dh, M)
         
         vh, zh, qh, rh = map(split_heads, (v, z, q, r))
 
