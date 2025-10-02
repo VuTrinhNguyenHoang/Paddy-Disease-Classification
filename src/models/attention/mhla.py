@@ -6,7 +6,7 @@ import math
 class MultiHeadLinearAttention2D(nn.Module):
     def __init__(self, c_in, c_out, heads):
         super().__init__()
-        assert c_out % heads
+        assert c_out % heads == 0
 
         self.heads = heads
         self.dh = c_out // heads
