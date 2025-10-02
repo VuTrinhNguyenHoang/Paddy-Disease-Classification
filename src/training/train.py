@@ -118,7 +118,7 @@ def train_model(model_name, model, train_loader, valid_loader, criterion, optimi
     num_params = sum(p.numel() for p in model.parameters())
     model_size_mb = sum(p.numel()*p.element_size() for p in model.parameters())/(1024**2)
 
-    return {
+    return history, {
         "model_name": model_name,
         "size_mb": model_size_mb,
         "valid_acc": valid_acc,
