@@ -95,8 +95,7 @@ def train_model(model_name, model, train_loader, valid_loader, criterion, optimi
         pbar.set_postfix(train_loss=f"{train_loss:.4f}", valid_loss=f"{valid_loss:.4f}",
                              valid_acc=f"{valid_acc*100:.2f}%", valid_f1=f"{valid_f1:.4f}")
 
-        print(f"[{epoch}/{epochs}]: train_loss={train_loss:.4f} | valid_loss={valid_loss:.4f} | \
-              valid_acc={valid_acc*100:.2f}% | valid_f1={valid_f1:.4f}")
+        print(f"[{epoch}/{epochs}]: train_loss={train_loss:.4f} | valid_loss={valid_loss:.4f} | valid_acc={valid_acc*100:.2f}% | valid_f1={valid_f1:.4f}")
         
         if patience != None:
             if valid_f1 > best_f1:
