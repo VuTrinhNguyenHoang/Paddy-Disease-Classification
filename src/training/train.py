@@ -66,7 +66,7 @@ def get_param_groups(model, base_lr=1e-4, head_lr=1e-3, weight_decay=1e-2):
         param_groups.append({"params": head_params, "lr": head_lr, "weight_decay": weight_decay})
     return param_groups
 
-def train(model_name, model, train_loader, valid_loader, criterion, optimizer, scaler, scheduler,
+def train_model(model_name, model, train_loader, valid_loader, criterion, optimizer, scaler, scheduler,
           gpu_aug=None, MEAN=None, STD=None, epochs=5, patience=None):
     best_f1, best_epoch = -1.0, -1
     best_path = f"{model_name}_best.pt"
