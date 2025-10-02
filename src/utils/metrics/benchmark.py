@@ -68,8 +68,8 @@ def evaluate(model, loader, criterion, MEAN=None, STD=None):
 
         p = logits.argmax(1).cpu().numpy()
         
-        y_pred.append(p)
-        y_true.append(y.numpy())
+        y_pred.append(p.cpu().numpy())
+        y_true.append(y.cpu().numpy())
 
     valid_loss = valid_running / valid_total
     y_true = np.concatenate(y_true)
