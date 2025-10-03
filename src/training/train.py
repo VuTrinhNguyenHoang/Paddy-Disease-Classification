@@ -70,7 +70,7 @@ def get_param_groups(model, base_lr=1e-4, head_lr=1e-3, weight_decay=1e-2):
     return param_groups
 
 def train_model(model_name, model, train_loader, valid_loader, criterion, optimizer, scaler, scheduler,
-          gpu_aug=None, MEAN=None, STD=None, epochs=5, patience=None):
+                gpu_aug=None, MEAN=None, STD=None, epochs=5, patience=None, fps_image_size=256):
     best_f1, best_epoch = -1.0, -1
     best_path = f"{model_name}_best.pt"
 
@@ -116,7 +116,7 @@ def train_model(model_name, model, train_loader, valid_loader, criterion, optimi
     model.load_state_dict(ckpt["model"])
 
     _, valid_acc, valid_f1 = evaluate(model, valid_loader, criterion, MEAN, STD)
-    fps_value = fps(model, 64, 224)
+    fps_value = fps(model, 32, fps_image_size)
 
     num_params = sum(p.numel() for p in model.parameters())
     model_size_mb = sum(p.numel()*p.element_size() for p in model.parameters())/(1024**2)

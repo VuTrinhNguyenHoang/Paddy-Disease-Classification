@@ -1,11 +1,11 @@
-import torch
 import torch.nn as nn
 import timm
 
 from ..attention import (
     BoTNetBlock,
     BoTNetBlockLinear,
-    CABlock
+    CABlock,
+    ECABlock
 )
 
 class MobileNetV3_Small_BoT(nn.Module):
@@ -110,3 +110,46 @@ class MobileNetV3_Small_Hybrid(nn.Module):
         x = self.dropout(x)
         return self.fc(x)
     
+class MobileNetV3_Small_ECA(nn.Module):
+    def __init__(self, num_classes=4, k_size=3, pretrained=True):
+        super().__init__()
+        self.backbone = timm.create_model(
+            "mobilenetv3_small_100", 
+            pretrained=pretrained, 
+            num_classes=0
+        )
+        self.out_channels = self.backbone.num_features
+
+        self.eca_block = ECABlock(
+            c_in=self.out_channels,
+            c_out=self.out_channels,
+            k_size=k_size
+        )
+
+        self.pool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Linear(self.out_channels, num_classes)
+
+    def forward(self, x):
+        x = self.backbone.forward_features(x)
+        x = self.eca_block(x)
+        x = self.pool(x).flatten(1)
+        return self.fc(x)
+
+class MobileViT_XXS(nn.Module):
+    def __init__(self, num_classes, image_size=224, pretrained=True):
+        super().__init__()
+        self.backbone = timm.create_model(
+            "mobilevit_xxs",
+            pretrained=pretrained,
+            num_classes=0,
+            image_size=image_size
+        )
+        self.out_channels = self.backbone.num_features
+
+        self.pool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Linear(self.out_channels, num_classes)
+
+    def forward(self, x):
+        x = self.backbone.forward_features(x)
+        x = self.pool(x).flatten(1)
+        return self.fc(x)
