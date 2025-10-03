@@ -142,7 +142,7 @@ class MobileViT_XXS(nn.Module):
             "mobilevit_xxs",
             pretrained=pretrained,
             num_classes=0,
-            image_size=image_size
+            img_size=image_size
         )
         self.out_channels = self.backbone.num_features
 
