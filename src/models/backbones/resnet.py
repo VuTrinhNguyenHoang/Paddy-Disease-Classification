@@ -5,7 +5,7 @@ import timm
 from ..attention import BoTNetBlock, BoTNetBlockLinear
 
 class ResNet18_BoT(nn.Module):
-    def __init__(self, num_classes, heads, pretrained=True):
+    def __init__(self, num_classes, heads, pretrained=True, dropout: float = 0.0):
         super().__init__()
         backbone = timm.create_model(
             "resnet18",
@@ -19,6 +19,7 @@ class ResNet18_BoT(nn.Module):
         self.bot_block = BoTNetBlock(512, 512, heads)
 
         self.pool = backbone.global_pool
+        self.dropout = nn.Dropout(dropout) if dropout and dropout > 0 else nn.Identity()
         self.fc = nn.Linear(512, num_classes)
 
     def forward(self, x):
@@ -27,10 +28,14 @@ class ResNet18_BoT(nn.Module):
         x = self.bot_block(x)
         x = self.pool(x)
         x = torch.flatten(x, 1)
+        x = self.dropout(x)
         return self.fc(x)
+    
+    def get_classifier(self):
+        return self.fc
 
 class ResNet18_BoTLinear(nn.Module):
-    def __init__(self, num_classes, heads, pretrained=True):
+    def __init__(self, num_classes, heads, pretrained=True, dropout: float = 0.0):
         super().__init__()
         backbone = timm.create_model(
             "resnet18",
@@ -44,6 +49,7 @@ class ResNet18_BoTLinear(nn.Module):
         self.bot_block = BoTNetBlockLinear(512, 512, heads)
 
         self.pool = backbone.global_pool
+        self.dropout = nn.Dropout(dropout) if dropout and dropout > 0 else nn.Identity()
         self.fc = nn.Linear(512, num_classes)
 
     def forward(self, x):
@@ -52,4 +58,8 @@ class ResNet18_BoTLinear(nn.Module):
         x = self.bot_block(x)
         x = self.pool(x)
         x = torch.flatten(x, 1)
+        x = self.dropout(x)
         return self.fc(x)
+    
+    def get_classifier(self):
+        return self.fc

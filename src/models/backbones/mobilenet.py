@@ -9,7 +9,7 @@ from ..attention import (
 )
 
 class MobileNetV3_Small_BoT(nn.Module):
-    def __init__(self, num_classes, heads, pretrained=True):
+    def __init__(self, num_classes, heads, pretrained=True, dropout: float = 0.0):
         super().__init__()
         self.backbone = timm.create_model(
             "mobilenetv3_small_100",
@@ -25,16 +25,21 @@ class MobileNetV3_Small_BoT(nn.Module):
         )
 
         self.pool = nn.AdaptiveAvgPool2d(1)
+        self.dropout = nn.Dropout(dropout) if dropout and dropout > 0 else nn.Identity()
         self.fc = nn.Linear(self.out_channels, num_classes)
 
     def forward(self, x):
         x = self.backbone.forward_features(x)
         x = self.bot(x)
         x = self.pool(x).flatten(1)
+        x = self.dropout(x)
         return self.fc(x)
     
+    def get_classifier(self):
+        return self.fc
+    
 class MobileNetV3_Small_BoT_Linear(nn.Module):
-    def __init__(self, num_classes, heads, pretrained=True):
+    def __init__(self, num_classes, heads, pretrained=True, dropout: float = 0.0):
         super().__init__()
         self.backbone = timm.create_model(
             "mobilenetv3_small_100",
@@ -50,16 +55,21 @@ class MobileNetV3_Small_BoT_Linear(nn.Module):
         )
         
         self.pool = nn.AdaptiveAvgPool2d(1)
+        self.dropout = nn.Dropout(dropout) if dropout and dropout > 0 else nn.Identity()
         self.fc = nn.Linear(self.out_channels, num_classes)
 
     def forward(self, x):
         x = self.backbone.forward_features(x)
         x = self.bot(x)
         x = self.pool(x).flatten(1)
+        x = self.dropout(x)
         return self.fc(x)
     
+    def get_classifier(self):
+        return self.fc
+    
 class MobileNetV3_Small_CA(nn.Module):
-    def __init__(self, num_classes=4, reduction=32, pretrained=True):
+    def __init__(self, num_classes=4, reduction=32, pretrained=True, dropout: float = 0.0):
         super().__init__()
         self.backbone = timm.create_model(
             "mobilenetv3_small_100", 
@@ -75,16 +85,21 @@ class MobileNetV3_Small_CA(nn.Module):
         )
         
         self.pool = nn.AdaptiveAvgPool2d(1)
+        self.dropout = nn.Dropout(dropout) if dropout and dropout > 0 else nn.Identity()
         self.fc = nn.Linear(self.out_channels, num_classes)
 
     def forward(self, x):
         x = self.backbone.forward_features(x)
         x = self.ca_block(x)
         x = self.pool(x).flatten(1)
+        x = self.dropout(x)
         return self.fc(x)
     
+    def get_classifier(self):
+        return self.fc
+    
 class MobileNetV3_Small_Hybrid(nn.Module):
-    def __init__(self, num_classes=4, heads=4, reduction=16, pretrained=True):
+    def __init__(self, num_classes=4, heads=4, reduction=16, pretrained=True, dropout: float = 0.2):
         super().__init__()
         self.backbone = timm.create_model(
             "mobilenetv3_small_100", 
@@ -100,7 +115,7 @@ class MobileNetV3_Small_Hybrid(nn.Module):
         )
         
         self.pool = nn.AdaptiveAvgPool2d(1)
-        self.dropout = nn.Dropout(0.2)
+        self.dropout = nn.Dropout(dropout) if dropout and dropout > 0 else nn.Identity()
         self.fc = nn.Linear(self.out_channels, num_classes)
 
     def forward(self, x):
@@ -110,8 +125,11 @@ class MobileNetV3_Small_Hybrid(nn.Module):
         x = self.dropout(x)
         return self.fc(x)
     
+    def get_classifier(self):
+        return self.fc
+    
 class MobileNetV3_Small_ECA(nn.Module):
-    def __init__(self, num_classes=4, k_size=3, pretrained=True):
+    def __init__(self, num_classes=4, k_size=3, pretrained=True, dropout: float = 0.0):
         super().__init__()
         self.backbone = timm.create_model(
             "mobilenetv3_small_100", 
@@ -127,16 +145,21 @@ class MobileNetV3_Small_ECA(nn.Module):
         )
 
         self.pool = nn.AdaptiveAvgPool2d(1)
+        self.dropout = nn.Dropout(dropout) if dropout and dropout > 0 else nn.Identity()
         self.fc = nn.Linear(self.out_channels, num_classes)
 
     def forward(self, x):
         x = self.backbone.forward_features(x)
         x = self.eca_block(x)
         x = self.pool(x).flatten(1)
+        x = self.dropout(x)
         return self.fc(x)
+    
+    def get_classifier(self):
+        return self.fc
 
 class MobileViT_XXS(nn.Module):
-    def __init__(self, num_classes, image_size=224, pretrained=True):
+    def __init__(self, num_classes, image_size=224, pretrained=True, dropout: float = 0.0):
         super().__init__()
         self.backbone = timm.create_model(
             "mobilevit_xxs",
@@ -147,9 +170,14 @@ class MobileViT_XXS(nn.Module):
         self.out_channels = self.backbone.num_features
 
         self.pool = nn.AdaptiveAvgPool2d(1)
+        self.dropout = nn.Dropout(dropout) if dropout and dropout > 0 else nn.Identity()
         self.fc = nn.Linear(self.out_channels, num_classes)
 
     def forward(self, x):
         x = self.backbone.forward_features(x)
         x = self.pool(x).flatten(1)
+        x = self.dropout(x)
         return self.fc(x)
+
+    def get_classifier(self):
+        return self.fc
