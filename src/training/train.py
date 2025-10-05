@@ -1,5 +1,6 @@
 import os
 import torch
+import torch.nn as nn
 from tqdm.auto import tqdm
 from ..utils.metrics import evaluate, fps
 
@@ -40,33 +41,60 @@ def save_ckpt(model, path, meta):
         os.remove(path)
     torch.save({"model": model.state_dict(), "meta": meta}, path)
 
-def get_param_groups(model, base_lr=1e-4, head_lr=1e-3, weight_decay=1e-2):
-    decay, no_decay, head_params = [], [], []
+def get_param_groups(model, base_lr=1e-4, head_lr=1e-3, weight_decay=1e-2,
+                     new_keywords=("fc", "classifier", "bot", "mhsa", "mhla", "attention", "eca", "ca", "cablock")):
+    bb_decay, bb_no_decay = [], []
+    new_decay, new_no_decay = [], []
 
-    head = model.get_classifier() if hasattr(model, "get_classifier") else None
-    head_ids = {id(p) for p in head.parameters()} if head is not None else set()
+    # Identify explicit classifier if provided
+    head_module = model.get_classifier() if hasattr(model, "get_classifier") else None
+    head_ids = {id(p) for p in head_module.parameters()} if head_module is not None else set()
+
+    norm_layer_types = (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d,
+                        nn.LayerNorm, nn.GroupNorm, nn.InstanceNorm1d, nn.InstanceNorm2d, nn.InstanceNorm3d)
+
+    def is_new_param(name, param):
+        if id(param) in head_ids:
+            return True
+        lower = name.lower()
+        return any(kw in lower for kw in new_keywords)
 
     for name, param in model.named_parameters():
         if not param.requires_grad:
             continue
 
-        # tách head theo id()
-        if id(param) in head_ids:
-            head_params.append(param)
-            continue
-
-        # backbone: không decay cho bias và norm
-        if name.endswith("bias") or "norm" in name.lower():
-            no_decay.append(param)
+        target_is_new = is_new_param(name, param)
+        # Decide decay vs no_decay
+        no_decay_flag = False
+        if name.endswith('bias'):
+            no_decay_flag = True
         else:
-            decay.append(param)
+            # Try to fetch module to check its type (optional best-effort)
+            # We won't traverse modules each time for speed; heuristic on name first.
+            if any(nd in name.lower() for nd in ["norm", "bn", "gn", "ln"]):
+                no_decay_flag = True
 
-    param_groups = [
-        {"params": decay, "lr": base_lr, "weight_decay": weight_decay},
-        {"params": no_decay, "lr": base_lr, "weight_decay": 0.0},
-    ]
-    if head_params:
-        param_groups.append({"params": head_params, "lr": head_lr, "weight_decay": weight_decay})
+        if target_is_new:
+            if no_decay_flag:
+                new_no_decay.append(param)
+            else:
+                new_decay.append(param)
+        else:
+            if no_decay_flag:
+                bb_no_decay.append(param)
+            else:
+                bb_decay.append(param)
+
+    param_groups = []
+    if bb_decay:
+        param_groups.append({"params": bb_decay, "lr": base_lr, "weight_decay": weight_decay})
+    if bb_no_decay:
+        param_groups.append({"params": bb_no_decay, "lr": base_lr, "weight_decay": 0.0})
+    if new_decay:
+        param_groups.append({"params": new_decay, "lr": head_lr, "weight_decay": weight_decay})
+    if new_no_decay:
+        param_groups.append({"params": new_no_decay, "lr": head_lr, "weight_decay": 0.0})
+
     return param_groups
 
 def train_model(model_name, model, train_loader, valid_loader, criterion, optimizer, scaler, scheduler,
