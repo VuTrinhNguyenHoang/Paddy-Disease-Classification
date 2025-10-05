@@ -17,8 +17,8 @@ class PositionalEncoding2D(nn.Module):
 
         d_model = dim // 2
 
-        y_pos = torch.arange(max_h, dtype=torch.float32).unsqueeze(1)
-        x_pos = torch.arange(max_w, dtype=torch.float32).unsqueeze(0)
+        y_pos = torch.range(max_h, dtype=torch.float32).unsqueeze(1)
+        x_pos = torch.range(max_w, dtype=torch.float32).unsqueeze(0)
 
         div_term = torch.exp(torch.range(0, d_model, 2, dtype=torch.float32) * 
                              -(math.log(temperature) / d_model))
