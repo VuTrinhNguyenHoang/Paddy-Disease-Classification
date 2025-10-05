@@ -30,15 +30,17 @@ class PositionalEncoding2D(nn.Module):
 
         sin_y = torch.sin(y_scaled).unsqueeze(2).repeat(1, 1, self.max_w)  # (H, dim_q, W)
         cos_y = torch.cos(y_scaled).unsqueeze(2).repeat(1, 1, self.max_w)
-        sin_x = torch.sin(x_scaled).unsqueeze(0).repeat(self.max_h, 1, 1)  # (H, dim_q, W)
+        # (H, W, dim_q)
+        sin_x = torch.sin(x_scaled).unsqueeze(0).repeat(self.max_h, 1, 1)
         cos_x = torch.cos(x_scaled).unsqueeze(0).repeat(self.max_h, 1, 1)
 
         pe = torch.zeros(self.dim, self.max_h, self.max_w, dtype=torch.float32)
         # Rearrange to (C, H, W)
         pe[0:dim_quarter] = sin_y.permute(1, 0, 2)          # (dim_q, H, W)
         pe[dim_quarter:2*dim_quarter] = cos_y.permute(1, 0, 2)
-        pe[2*dim_quarter:3*dim_quarter] = sin_x.permute(1, 0, 2)
-        pe[3*dim_quarter:] = cos_x.permute(1, 0, 2)
+        # For x we need (dim_q, H, W); current sin_x/cos_x is (H, W, dim_q)
+        pe[2*dim_quarter:3*dim_quarter] = sin_x.permute(2, 0, 1)
+        pe[3*dim_quarter:] = cos_x.permute(2, 0, 1)
         return pe
 
     def forward(self, B, H, W):
