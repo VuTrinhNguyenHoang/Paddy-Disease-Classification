@@ -55,6 +55,6 @@ class MultiHeadLinearAttention2D(nn.Module):
         out = out / denom
         out = out.reshape(B, -1, M).view(B, -1, H, W)
 
-        if torch.isnan(out).any():
-            raise RuntimeError("NaN detected in MultiHeadLinearAttention2D output")
+        # if torch.isnan(out).any():
+        #     raise RuntimeError("NaN detected in MultiHeadLinearAttention2D output")
         return out

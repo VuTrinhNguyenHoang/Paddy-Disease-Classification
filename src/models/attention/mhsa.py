@@ -47,6 +47,6 @@ class MultiHeadSelfAttention2D(nn.Module):
         out = out_h.reshape(B, -1, M).view(B, -1, H, W)
 
         # Optional runtime check (can disable for speed)
-        if torch.isnan(out).any():
-            raise RuntimeError("NaN detected in MultiHeadSelfAttention2D output")
+        # if torch.isnan(out).any():
+        #     raise RuntimeError("NaN detected in MultiHeadSelfAttention2D output")
         return out
